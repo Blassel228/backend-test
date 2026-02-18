@@ -6,6 +6,7 @@ class TopCategoryResponse(BaseModel):
     category_name: str
     category_id: int
 
+
 class CategoryCount(BaseModel):
     category_id: int
     count: int

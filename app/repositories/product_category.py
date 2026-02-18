@@ -60,9 +60,8 @@ class ProductCategoryRepository(BaseRepository):
             )
             .join(Product, (Product.id == ProductCategory.product_id), isouter=True)
             .where(Category.id.in_(category_ids))
+            .where(Product.name.ilike(f"%{q}%"))
         )
-
-        stmt = stmt.where(Product.name.ilike(f"%{q}%"))
 
         if brand_ids:
             stmt = stmt.where(Product.brand_id.in_(brand_ids))

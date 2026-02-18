@@ -13,7 +13,7 @@ class ProductCategoryService:
         db: AsyncSession,
         repo: ProductCategoryRepository,
         limit: Optional[int] = 10,
-    ) -> List[TopCategoryResponse]:
+    ) -> list[TopCategoryResponse]:
         rows = await repo.get_top_categories_by_query(db, q, limit=limit)
 
         return [
@@ -30,7 +30,7 @@ class ProductCategoryService:
         repo: ProductCategoryRepository,
         category_ids: List[int],
         brand_ids: List[int],
-    ) -> List[CategoryCount]:
+    ) -> list[CategoryCount]:
         rows = await repo.count_categories(
             q=q, db=db, category_ids=category_ids, brand_ids=brand_ids
         )

@@ -17,6 +17,8 @@ class ProductService:
         q: Optional[str] = None,
         brand_ids: Optional[List[int]] = None,
         category_ids: Optional[List[int]] = None,
+        offset: int | None = None,
+        limit: int | None= None,
     ) -> Sequence[Product]:
         filtered_product_ids = None
         if category_ids:
@@ -37,16 +39,30 @@ class ProductService:
             q=q,
             ids=filtered_product_ids,
             filters=filters,
+            offset=offset,
+            limit=limit,
         )
 
         return products
+
+    async def count_products_for_search(
+        self,
+        q: str,
+        repo: ProductRepository,
+        db: AsyncSession,
+        brand_ids: List[int],
+        category_ids: List[int],
+    ) -> int:
+        return await repo.count_products_for_search(
+            db=db, q=q, brand_ids=brand_ids, category_ids=category_ids
+        )
 
     async def get_top_brands_by_query(
         self,
         db: AsyncSession,
         repo: ProductRepository,
         q: str,
-    ):
+    ) -> list[TopBrandResponse]:
         rows = await repo.get_top_brands_by_query(db, q)
 
         return [
@@ -61,11 +77,9 @@ class ProductService:
         q: str,
         category_ids: List[int],
         brand_ids: List[int],
-    ):
+    ) -> list[BrandCount]:
         rows = await repo.count_brands(
             db=db, q=q, category_ids=category_ids, brand_ids=brand_ids
         )
 
-        res = [BrandCount(count=count, brand_id=brand_id) for brand_id, count in rows]
-        print(res)
-        return res
+        return [BrandCount(count=count, brand_id=brand_id) for brand_id, count in rows]
