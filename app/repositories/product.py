@@ -1,19 +1,20 @@
-from app.models import Product, Brand
+from app.models import Product, Brand, ProductCategory
 from app.repositories.base import BaseRepository
 
 from typing import Optional, List, Dict, Any, Sequence
 from sqlalchemy import select, and_, func, desc
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 class ProductRepository(BaseRepository):
     model = Product
 
     async def get_alike_with_filters(
-            self,
-            db: AsyncSession,
-            q: str,
-            ids: Optional[List[str]] = None,
-            filters: Optional[Dict[str, Any]] = None,
+        self,
+        db: AsyncSession,
+        q: str,
+        ids: Optional[List[str]] = None,
+        filters: Optional[Dict[str, Any]] = None,
     ) -> Sequence[Product]:
         stmt = select(self.model)
         conditions = []
@@ -34,12 +35,11 @@ class ProductRepository(BaseRepository):
         return result.all()
 
     async def get_top_brands_by_query(
-            self,
-            db: AsyncSession,
-            q: str,
-            limit: int = 10,
-    ) -> list[tuple[int, str, int]]:
-
+        self,
+        db: AsyncSession,
+        q: str,
+        limit: int = 10,
+    ) -> Sequence:
         stmt = (
             select(
                 self.model.brand_id,
@@ -52,6 +52,27 @@ class ProductRepository(BaseRepository):
             .order_by(desc("total"))
             .limit(limit)
         )
+
+        result = await db.execute(stmt)
+        return result.all()
+
+    async def count_brands(
+        self,
+        db: AsyncSession,
+        q: str,
+        category_ids: list[int],
+        brand_ids: list[int],
+    ) -> Sequence:
+        stmt = (
+            select(Product.brand_id, func.count(Product.id).label("count"))
+            .where(Product.name.ilike(f"%{q}%"))
+            .where(Product.brand_id.in_(brand_ids))
+        )
+
+        if category_ids:
+            stmt = stmt.join(ProductCategory, ProductCategory.product_id == Product.id).where(ProductCategory.category_id.in_(category_ids))
+
+        stmt = stmt.group_by(Product.brand_id)
 
         result = await db.execute(stmt)
         return result.all()

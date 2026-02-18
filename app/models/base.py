@@ -7,6 +7,7 @@ from sqlalchemy import Boolean, DateTime, String, text
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+
 class CreatedAtModel:
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

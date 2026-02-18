@@ -10,7 +10,6 @@ class Settings(BaseConfig):
     SERVER_CORS_ORIGINS: str = "*"
     DEBUG: bool = True
 
-
     db: DataBaseConfig = DataBaseConfig()
 
     @property

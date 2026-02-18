@@ -20,11 +20,11 @@ class ProductCategoryRepository(BaseRepository):
         return result.all()
 
     async def get_top_categories_by_query(
-            self,
-            db: AsyncSession,
-            q: str,
-            limit: int = 10,
-    ) -> list[tuple[int, str, int]]:
+        self,
+        db: AsyncSession,
+        q: str,
+        limit: int = 10,
+    ) -> Sequence:
         stmt = (
             select(
                 self.model.category_id,
@@ -42,3 +42,33 @@ class ProductCategoryRepository(BaseRepository):
         result = await db.execute(stmt)
         return result.all()
 
+    async def count_categories(
+        self,
+        db: AsyncSession,
+        q: str,
+        category_ids: List[int],
+        brand_ids: List[int],
+    ) -> Sequence:
+        stmt = (
+            select(
+                Category.id.label("category_id"), func.count(Product.id).label("count")
+            )
+            .join(
+                ProductCategory,
+                ProductCategory.category_id == Category.id,
+                isouter=True,
+            )
+            .join(Product, (Product.id == ProductCategory.product_id), isouter=True)
+            .where(Category.id.in_(category_ids))
+        )
+
+        stmt = stmt.where(Product.name.ilike(f"%{q}%"))
+
+        if brand_ids:
+            stmt = stmt.where(Product.brand_id.in_(brand_ids))
+
+        stmt = stmt.group_by(Category.id)
+
+        result = await db.execute(stmt)
+
+        return result.all()

@@ -18,9 +18,7 @@ class Product(Base, CreatedAtModel):
 
     image: Mapped[Optional[str]] = mapped_column(Text)
 
-    brand: Mapped[Optional["Brand"]] = relationship(
-        back_populates="products"
-    )
+    brand: Mapped[Optional["Brand"]] = relationship(back_populates="products")
 
     categories: Mapped[List["Category"]] = relationship(
         secondary="product_categories",

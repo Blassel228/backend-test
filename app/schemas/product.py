@@ -4,5 +4,5 @@ from pydantic import BaseModel
 
 
 class SearchRequestParams(BaseModel):
-    brand_ids: Optional[List[int]] = None,
+    brand_ids: Optional[List[int]] = None
     category_ids: Optional[List[int]] = None

@@ -13,7 +13,6 @@ class BaseRepository:
 
         for attr, value in filters.items():
             if hasattr(self.model, attr):
-
                 column = getattr(self.model, attr)
 
                 if isinstance(value, list):
@@ -23,7 +22,9 @@ class BaseRepository:
 
         return conditions
 
-    async def get_one_or_none(self, db: AsyncSession, filters: dict[str, Any]) -> Optional:
+    async def get_one_or_none(
+        self, db: AsyncSession, filters: dict[str, Any]
+    ) -> Optional:
         stmt = select(self.model).where(and_(*self.build_filters(filters)))
         return await db.scalar(stmt)
 
@@ -34,9 +35,9 @@ class BaseRepository:
         return result
 
     async def get_many(
-            self,
-            db: AsyncSession,
-            filters: Optional[dict[str, Any]] = None,
+        self,
+        db: AsyncSession,
+        filters: Optional[dict[str, Any]] = None,
     ) -> Sequence:
         stmt = select(self.model)
 
@@ -52,9 +53,9 @@ class BaseRepository:
         return items
 
     async def get_many_or_none(
-            self,
-            db: AsyncSession,
-            filters: Optional[dict[str, Any]] = None,
+        self,
+        db: AsyncSession,
+        filters: Optional[dict[str, Any]] = None,
     ) -> Optional[Sequence]:
         stmt = select(self.model)
 
@@ -85,4 +86,3 @@ class BaseRepository:
         result = await db.execute(stmt)
         await db.commit()
         return result.rowcount > 0
-

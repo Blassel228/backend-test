@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import Product
 from app.repositories.product import ProductRepository
 from app.repositories.product_category import ProductCategoryRepository
-from app.schemas.brand import TopBrandResponse
+from app.schemas.brand import TopBrandResponse, BrandCount
 
 
 class ProductService:
@@ -18,11 +18,12 @@ class ProductService:
         brand_ids: Optional[List[int]] = None,
         category_ids: Optional[List[int]] = None,
     ) -> Sequence[Product]:
-
         filtered_product_ids = None
         if category_ids:
-            filtered_product_ids = await product_category_repo.get_product_ids_by_categories(
-                db, category_ids
+            filtered_product_ids = (
+                await product_category_repo.get_product_ids_by_categories(
+                    db, category_ids
+                )
             )
             if not filtered_product_ids:
                 return []
@@ -41,10 +42,10 @@ class ProductService:
         return products
 
     async def get_top_brands_by_query(
-            self,
-            db: AsyncSession,
-            repo: ProductRepository,
-            q: str,
+        self,
+        db: AsyncSession,
+        repo: ProductRepository,
+        q: str,
     ):
         rows = await repo.get_top_brands_by_query(db, q)
 
@@ -52,3 +53,19 @@ class ProductService:
             TopBrandResponse(brand_id=brand_id, total=total, brand_name=brand_name)
             for brand_id, brand_name, total in rows
         ]
+
+    async def count_brands(
+        self,
+        db: AsyncSession,
+        repo: ProductRepository,
+        q: str,
+        category_ids: List[int],
+        brand_ids: List[int],
+    ):
+        rows = await repo.count_brands(
+            db=db, q=q, category_ids=category_ids, brand_ids=brand_ids
+        )
+
+        res = [BrandCount(count=count, brand_id=brand_id) for brand_id, count in rows]
+        print(res)
+        return res
