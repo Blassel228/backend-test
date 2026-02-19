@@ -16,6 +16,7 @@ class ProductService:
         product_repo: ProductRepository,
         q: Optional[str] = None,
         brand_ids: Optional[List[int]] = None,
+        with_empty_brands: bool = True,
         category_ids: Optional[List[int]] = None,
         offset: int | None = None,
         limit: int | None= None,
@@ -34,11 +35,12 @@ class ProductService:
         if brand_ids:
             filters["brand_id"] = brand_ids
 
-        products = await product_repo.get_alike_with_filters(
+        products = await product_repo.select_products_with_filters(
             db=db,
             q=q,
-            ids=filtered_product_ids,
-            filters=filters,
+            filtered_product_ids=filtered_product_ids,
+            with_empty_brands=with_empty_brands,
+            brand_ids=brand_ids,
             offset=offset,
             limit=limit,
         )
@@ -53,7 +55,7 @@ class ProductService:
         brand_ids: List[int],
         category_ids: List[int],
     ) -> int:
-        return await repo.count_products_for_search(
+        return await repo.count_total_products(
             db=db, q=q, brand_ids=brand_ids, category_ids=category_ids
         )
 

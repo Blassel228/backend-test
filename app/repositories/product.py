@@ -3,22 +3,23 @@ from sqlalchemy.orm import selectinload
 from app.models import Product, Brand, ProductCategory
 from app.repositories.base import BaseRepository
 
-from typing import Optional, List, Any, Sequence
-from sqlalchemy import select, and_, func, desc
+from typing import Optional, List, Sequence
+from sqlalchemy import select, and_, func, desc, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class ProductRepository(BaseRepository):
     model = Product
 
-    async def get_alike_with_filters(
+    async def select_products_with_filters(
         self,
         db: AsyncSession,
         q: str,
         offset: int = None,
         limit: int = None,
-        ids: dict[list[str]] | None = None,
-        filters: dict[str, Any] | None= None,
+        filtered_product_ids: dict[list[str]] | None = None,
+        with_empty_brands: bool = True,
+        brand_ids: list[int] | None = None
     ) -> Sequence[Product]:
         stmt = select(self.model).options(
             selectinload(self.model.brand),
@@ -29,11 +30,22 @@ class ProductRepository(BaseRepository):
         if q:
             conditions.append(self.model.name.ilike(f"%{q}%"))
 
-        if ids:
-            conditions.append(self.model.id.in_(ids))
+        if filtered_product_ids:
+            conditions.append(self.model.id.in_(filtered_product_ids))
 
-        if filters:
-            conditions.extend(self.build_filters(filters))
+        if brand_ids and with_empty_brands:         #getting products with selected brands and without them
+            conditions.append(
+                or_(
+                    self.model.brand_id.in_(brand_ids),
+                    self.model.brand_id.is_(None),
+                )
+            )
+
+        elif brand_ids:
+            conditions.append(self.model.brand_id.in_(brand_ids))
+
+        elif with_empty_brands:
+            conditions.append(self.model.brand_id.is_(None))
 
         if conditions:
             stmt = stmt.where(and_(*conditions))
@@ -47,7 +59,8 @@ class ProductRepository(BaseRepository):
         result = await db.scalars(stmt)
         return result.all()
 
-    async def count_products_for_search(
+
+    async def count_total_products(
         self,
         db: AsyncSession,
         q: Optional[str] = None,

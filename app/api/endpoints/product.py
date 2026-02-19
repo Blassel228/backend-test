@@ -40,7 +40,7 @@ async def search_products(
         category_ids=category_ids,
     )
 
-    total = await service.count_products_for_search(
+    total = await service.count_total_products(
         repo=product_repo,
         db=db,
         q=q,
