@@ -57,7 +57,7 @@ async def top_brands(
     repo: product_repository_dep,
     db: get_db_dep,
     q: Optional[str] = Query(None, description="Search query for product name"),
-) ->  list[TopBrandResponse]:
+) -> list[TopBrandResponse]:
     return await service.get_top_brands_by_query(db=db, repo=repo, q=q)
 
 

@@ -18,7 +18,7 @@ class ProductRepository(BaseRepository):
         offset: int = None,
         limit: int = None,
         ids: dict[list[str]] | None = None,
-        filters: dict[str, Any] | None= None,
+        filters: dict[str, Any] | None = None,
     ) -> Sequence[Product]:
         stmt = select(self.model).options(
             selectinload(self.model.brand),
@@ -118,10 +118,9 @@ class ProductRepository(BaseRepository):
         )
 
         if category_ids:
-            stmt = (stmt.join(
+            stmt = stmt.join(
                 ProductCategory, ProductCategory.product_id == Product.id
-            )
-            .where(ProductCategory.category_id.in_(category_ids)))
+            ).where(ProductCategory.category_id.in_(category_ids))
 
         stmt = stmt.group_by(Product.brand_id)
 

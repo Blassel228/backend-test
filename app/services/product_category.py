@@ -30,11 +30,23 @@ class ProductCategoryService:
         repo: ProductCategoryRepository,
         category_ids: List[int],
         brand_ids: List[int],
+        selected_categories_with_counts: dict[int, int] | None = None,
     ) -> list[CategoryCount]:
         rows = await repo.count_categories(
-            q=q, db=db, category_ids=category_ids, brand_ids=brand_ids
+            q=q,
+            db=db,
+            category_ids=category_ids,
+            brand_ids=brand_ids,
+            selected_categories_with_counts=selected_categories_with_counts,
         )
-        return [
-            CategoryCount(category_id=category_id, count=count)
-            for category_id, count in rows
-        ]
+
+        result = []
+
+        if selected_categories_with_counts:
+            for category_id, count in selected_categories_with_counts.items():
+                result.append(CategoryCount(category_id=category_id, count=count))
+
+        for category_id, count in rows:
+            result.append(CategoryCount(category_id=category_id, count=count))
+
+        return result

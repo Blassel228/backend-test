@@ -48,26 +48,42 @@ class ProductCategoryRepository(BaseRepository):
         q: str,
         category_ids: List[int],
         brand_ids: List[int],
+        selected_categories_with_counts: dict[int, int] | None = None,
     ) -> Sequence:
+        selected_cat_ids = (
+            list(selected_categories_with_counts.keys())
+            if selected_categories_with_counts
+            else []
+        )
+        unselected_cat_ids = [
+            cid for cid in category_ids if cid not in selected_cat_ids
+        ]
+
+        if not unselected_cat_ids:
+            return []
+
+        selected_products_stmt = None
+        if selected_cat_ids:
+            selected_products_stmt = select(ProductCategory.product_id).where(
+                ProductCategory.category_id.in_(selected_cat_ids)
+            )
+
         stmt = (
             select(
                 Category.id.label("category_id"), func.count(Product.id).label("count")
             )
-            .join(
-                ProductCategory,
-                ProductCategory.category_id == Category.id,
-                isouter=True,
-            )
-            .join(Product, (Product.id == ProductCategory.product_id), isouter=True)
-            .where(Category.id.in_(category_ids))
+            .join(ProductCategory, ProductCategory.category_id == Category.id)
+            .join(Product, Product.id == ProductCategory.product_id)
+            .where(Category.id.in_(unselected_cat_ids))
             .where(Product.name.ilike(f"%{q}%"))
         )
 
         if brand_ids:
             stmt = stmt.where(Product.brand_id.in_(brand_ids))
 
+        if selected_products_stmt is not None:
+            stmt = stmt.where(Product.id.notin_(selected_products_stmt))
+
         stmt = stmt.group_by(Category.id)
-
         result = await db.execute(stmt)
-
         return result.all()

@@ -18,7 +18,7 @@ class ProductService:
         brand_ids: Optional[List[int]] = None,
         category_ids: Optional[List[int]] = None,
         offset: int | None = None,
-        limit: int | None= None,
+        limit: int | None = None,
     ) -> Sequence[Product]:
         filtered_product_ids = None
         if category_ids:

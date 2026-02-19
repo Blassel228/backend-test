@@ -1,4 +1,5 @@
-from typing import List
+import json
+from typing import List, Optional
 
 from fastapi import APIRouter, Query
 
@@ -25,13 +26,31 @@ async def top_categories(
 
 @router.get("/categories-count", response_model=List[CategoryCount])
 async def count_categories(
-    service: product_category_dep,
-    db: get_db_dep,
-    repo: product_category_repository_dep,
-    category_ids: List[int] = Query(...),
-    brand_ids: List[int] = Query(None),
-    q: str = Query(..., min_length=1),
+        service: product_category_dep,
+        db: get_db_dep,
+        repo: product_category_repository_dep,
+        category_ids: List[int] = Query(...),
+        brand_ids: Optional[List[int]] = Query(default=None),
+        q: str = Query(..., min_length=1),
+        selected_categories_with_counts: Optional[str] = Query(default=None),
 ) -> list[CategoryCount]:
+    parsed_counts: Optional[dict[int, int]] = None
+
+    if selected_categories_with_counts:
+        try:
+            data = json.loads(selected_categories_with_counts)
+            print("data: ", data)
+            parsed_counts = {int(k): v for k, v in data.items()}
+        except (json.JSONDecodeError, ValueError, TypeError):
+            parsed_counts = None
+
+    print("selected_categories_with_counts: ", parsed_counts)
+
     return await service.count_categories(
-        q=q, db=db, repo=repo, category_ids=category_ids, brand_ids=brand_ids
+        q=q,
+        db=db,
+        repo=repo,
+        category_ids=category_ids,
+        brand_ids=brand_ids,
+        selected_categories_with_counts=parsed_counts,
     )
