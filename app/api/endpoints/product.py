@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Any, Dict
 from fastapi import APIRouter, Query
 
 from app.api.dependencies import (
@@ -28,7 +28,7 @@ async def search_products(
     q: Optional[str] = Query(None, description="Search query for product name"),
     brand_ids: Optional[List[int]] = Query(None, examples=[523]),
     category_ids: Optional[List[int]] = Query(None),
-) -> dict[str]:
+):
     products = await service.search(
         offset=offset,
         limit=limit,

@@ -1,5 +1,6 @@
 from app.db.base import session
 
+
 async def get_db():
     db = session()
     try:
