@@ -1,4 +1,4 @@
-from typing import Optional, List, Any, Dict
+from typing import Optional, List
 from fastapi import APIRouter, Query
 
 from app.api.dependencies import (
@@ -10,11 +10,6 @@ from app.api.dependencies import (
 from app.schemas.brand import TopBrandResponse, BrandCount
 
 router = APIRouter()
-
-
-@router.get("/")
-async def get_many(product_repo: product_repository_dep, db: get_db_dep):
-    return await product_repo.get_many(db=db)
 
 
 @router.get("/search")
