@@ -54,11 +54,10 @@ class ProductCategoryRepository(BaseRepository):
                 Category.id.label("category_id"), func.count(Product.id).label("count")
             )
             .join(
-                ProductCategory,
-                ProductCategory.category_id == Category.id,
-                isouter=True,
+                self.model,
+                self.model.category_id == Category.id,
             )
-            .join(Product, (Product.id == ProductCategory.product_id), isouter=True)
+            .join(Product, (Product.id == self.model.product_id))
             .where(Category.id.in_(category_ids))
             .where(Product.name.ilike(f"%{q}%"))
         )
